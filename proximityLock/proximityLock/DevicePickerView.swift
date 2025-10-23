@@ -68,7 +68,7 @@ struct DevicePickerView: View {
                 }
                 .padding(.vertical, 2)
             }
-            .frame(height: 120)
+            .frame(height: 100)
         }
     }
 }

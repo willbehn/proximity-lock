@@ -86,7 +86,6 @@ struct ProximityLockView: View {
                     .tint(.accentColor)
                 }
                 .padding(12)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(.quaternary, lineWidth: 1)
@@ -94,7 +93,6 @@ struct ProximityLockView: View {
                 
                 RSSIChartView(scanner: scanner)
                     .padding(12)
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(.quaternary, lineWidth: 1)
@@ -103,7 +101,6 @@ struct ProximityLockView: View {
                 
                 
                 DevicePickerView(scanner: scanner).padding(12)
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(.quaternary, lineWidth: 1)
@@ -128,5 +125,3 @@ struct ProximityLockView: View {
         } //.background(Color(.windowBackgroundColor))
     }
 }
-
-

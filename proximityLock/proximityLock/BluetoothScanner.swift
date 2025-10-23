@@ -12,6 +12,11 @@ import Cocoa
 import Foundation
 import Combine
 
+import os
+
+private let logger = Logger(subsystem: "willbehn.proximityLock", category: "Bluetooth")
+
+
 struct DeviceItem: Hashable, Identifiable {
     let id: String
     let name: String
@@ -57,7 +62,7 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            print("screen is locked")
+            logger.info("screen is locked")
             self?.isLocked = true
             self?.stopScanning()
         }
@@ -67,7 +72,7 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            print("screen is unlocked")
+            logger.info("screen is unlocked")
             self?.isLocked = false
             self?.startScanningIfReady()
             self?.unlockTime = Date().timeIntervalSince1970
@@ -76,13 +81,13 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
-        case .poweredOn:     print("Bluetooth ON")
-        case .poweredOff:    print("Bluetooth OFF")
-        case .unauthorized:  print("unauthorized")
-        case .unsupported:   print("unsupported")
-        case .resetting:     print("resetting")
+        case .poweredOn:     logger.info("Bluetooth ON")
+        case .poweredOff:    logger.info("Bluetooth OFF")
+        case .unauthorized:  logger.info("unauthorized")
+        case .unsupported:   logger.info("unsupported")
+        case .resetting:     logger.info("resetting")
         case .unknown: fallthrough
-        @unknown default:    print("unknown")
+        @unknown default:    logger.info("unknown")
         }
     }
     
@@ -94,12 +99,11 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
         
         
         guard RSSI.intValue != 127 else { return }
-        
         guard !isLocked else { return }
         
-        if startTime == nil {startTime = Date().timeIntervalSince1970}
-        
         let now = Date().timeIntervalSince1970
+        
+        if startTime == nil {startTime = now}
         
         if let lt = self.unlockTime, now - lt <= 60 { return }
         
@@ -118,16 +122,16 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
                     //print("[][APPLE] RSSI=\(rssi) dBm m name=\(name)")
                     //print("id=\(peripheral.identifier.uuidString)")
                     
-                    let smoothed = filter.update(measuredRSSI: RSSI.doubleValue, time: Date().timeIntervalSince1970)
+                    let smoothed = filter.update(measuredRSSI: RSSI.doubleValue, time: now)
                     
                     rssiPublisher.send(smoothed)
                     
-                    print ("smoothed=\(smoothed) VS normal=\(RSSI.doubleValue)")
+                    logger.info("smoothed=\(smoothed) VS normal=\(RSSI.doubleValue)")
                     
-                    guard (Date().timeIntervalSince1970 - (startTime ?? 0.0)) > 25 else { return }
+                    guard (now - (startTime ?? 0.0)) > 25 else { return }
                     
                     if smoothed < threshold{
-                        print("LOCKING at \(Date()) rssi=\(smoothed)")
+                        logger.info("LOCKING at \(Date()) rssi=\(smoothed)")
                         
                         startScreenSaver()
                         
@@ -164,7 +168,7 @@ func startScreenSaver() {
     DispatchQueue.main.async {
         NSWorkspace.shared.openApplication(at: url, configuration: config) { _, error in
             if let error = error {
-                print("Error \(error)")
+                logger.error("Error \(error)")
             }
         }
     }
