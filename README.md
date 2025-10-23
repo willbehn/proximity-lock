@@ -21,3 +21,8 @@ You can also customize the RSSI threshold to suit your environment and sensitivi
 - Kalman filtering for stable signal readings
 ---
 
+### TODO
+[ ] Make searching for bluetooth devices not require to have turned on proximityLock.
+[ ] Use actual os lock insted of screensaver. Removes the need to have the setting for locking your mac when screensaver starts enabled.
+[ ] Test reliability further
+
