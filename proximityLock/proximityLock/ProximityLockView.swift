@@ -11,36 +11,37 @@ struct ProximityLockView: View {
     @EnvironmentObject var scanner: ScannerService
     @State private var isEditing = false
     
-    let minRSSI = -85.0
-    let maxRSSI = -35.0
+    private enum Metrics {
+        static let cardPadding: CGFloat = 12
+        static let cardCornerRadius: CGFloat = 10
+        static let cardBorderWidth: CGFloat = 1
+    }
+    
+    private let rssiRange: ClosedRange<Double> = -85.0 ... -35.0
+    
+    private func formatRSSI(_ value: Double) -> String { "\(Int(value)) dBm" }
     
     var body: some View {
-        VStack() {
-            
-            
-            
+        VStack {
             VStack(alignment: .leading, spacing: 12) {
                 
                 HStack(spacing: 8) {
                     Image(systemName: "lock.circle.fill")
                         .imageScale(.large)
-                    Text("Proximity Lock")
+                    Text(String(localized: "Proximity Lock"))
                         .font(.headline)
                     
                     Spacer()
                     
-                    Label(scanner.isOn ? "On" : "Off",
-                          systemImage: "circle.fill")
-                    .labelStyle(.titleAndIcon)
-                    .foregroundStyle(scanner.isOn ? .green : .secondary)
-                    .help("Scanner status")
-                    
                     Toggle(isOn: $scanner.isOn) {
-                        
+                        Label(scanner.isOn ? String(localized: "On") : String(localized: "Off"),
+                              systemImage: "circle.fill")
+                        .labelStyle(.titleAndIcon)
+                        .foregroundStyle(scanner.isOn ? .green : .secondary)
+                        .help(String(localized: "Scanner status"))
                     }
                     .toggleStyle(.switch)
-                    .onChange(of: scanner.isOn) { oldValue, newValue in
-                        
+                    .onChange(of: scanner.isOn) { _, newValue in
                         if newValue { scanner.start() } else { scanner.stop() }
                     }
                 }
@@ -50,34 +51,33 @@ struct ProximityLockView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Lock threshold")
                                 .font(.subheadline.weight(.semibold))
-                            Text("Lock when RSSI is below \(Int(scanner.threshold)) dBm")
+                            Text("Lock when RSSI is below \(formatRSSI(scanner.threshold))")
                                 .font(.caption)
                                 .monospacedDigit()
                         }
                         Spacer()
-                        Text("\(Int(scanner.threshold)) dBm")
+                        Text(formatRSSI(scanner.threshold))
                             .font(.caption2.weight(.semibold))
                             .monospacedDigit()
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                        
                     }
                     
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Less sensitive").font(.caption)
-                            Text("−85 dBm").font(.caption2).foregroundStyle(.secondary)
+                            Text(formatRSSI(rssiRange.lowerBound)).font(.caption2).foregroundStyle(.secondary)
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
                             Text("More sensitive").font(.caption)
-                            Text("−35 dBm").font(.caption2).foregroundStyle(.secondary)
+                            Text(formatRSSI(rssiRange.upperBound)).font(.caption2).foregroundStyle(.secondary)
                         }
                     }
                     
                     Slider(
                         value: $scanner.threshold,
-                        in: minRSSI ... maxRSSI,
+                        in: rssiRange,
                         onEditingChanged: { editing in
                             isEditing = editing
                             if !editing { scanner.updateThreshold() }
@@ -85,32 +85,29 @@ struct ProximityLockView: View {
                     )
                     .tint(.accentColor)
                 }
-                .padding(12)
+                .padding(Metrics.cardPadding)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(.quaternary, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
+                        .stroke(.quaternary, lineWidth: Metrics.cardBorderWidth)
                 )
                 
                 RSSIChartView(scanner: scanner)
-                    .padding(12)
+                    .padding(Metrics.cardPadding)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(.quaternary, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
+                            .stroke(.quaternary, lineWidth: Metrics.cardBorderWidth)
                     )
                 
-                
-                
-                DevicePickerView(scanner: scanner).padding(12)
+                DevicePickerView(scanner: scanner)
+                    .padding(Metrics.cardPadding)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(.quaternary, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
+                            .stroke(.quaternary, lineWidth: Metrics.cardBorderWidth)
                     )
-                
-                
                 
                 Divider()
                 
-                Button(action: { NSApp.terminate(nil) }) {
+                Button(role: .destructive, action: { NSApp.terminate(nil) }) {
                     HStack {
                         Text("Quit Proximity Lock")
                         Spacer()
@@ -119,9 +116,10 @@ struct ProximityLockView: View {
                     .padding(.vertical, 6)
                 }
                 .buttonStyle(.plain)
+            
             }
-            .padding(12)
+            .padding(Metrics.cardPadding)
             .frame(width: 300)
-        } //.background(Color(.windowBackgroundColor))
+        }
     }
 }
