@@ -1,5 +1,5 @@
 //
-//  main.swift
+//  BluetoothScanner.swift
 //  BluetoothProxScanPOC
 //
 //  Created by William Behn on 08/10/2025.
@@ -9,7 +9,6 @@ import Foundation
 import CoreBluetooth
 import Cocoa
 
-import Foundation
 import Combine
 
 import os
@@ -20,12 +19,20 @@ private let logger = Logger(subsystem: "willbehn.proximityLock", category: "Blue
 struct DeviceItem: Hashable, Identifiable {
     let id: String
     let name: String
+
+    static func == (lhs: DeviceItem, rhs: DeviceItem) -> Bool {
+        return lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 class BluetoothScanner: NSObject, CBCentralManagerDelegate {
+    private let btQueue = DispatchQueue(label: "bt.queue")
     private var manager: CBCentralManager!
     private var startTime: Double? = nil
-    private var stopAdTrigger: Bool = false
     
     private var unlockTime: Double? = nil
     
@@ -53,7 +60,7 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     
     override init() {
         super.init()
-        manager = CBCentralManager(delegate: self, queue: DispatchQueue(label: "bt.queue"))
+        manager = CBCentralManager(delegate: self, queue: btQueue)
         
         
         
@@ -62,9 +69,12 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            logger.info("screen is locked")
-            self?.isLocked = true
-            self?.stopScanning()
+            self?.btQueue.async { [weak self] in
+                guard let self = self else { return }
+                logger.info("screen is locked")
+                self.isLocked = true
+                self.stopScanning()
+            }
         }
         
         lockCenter.addObserver(
@@ -72,16 +82,21 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            logger.info("screen is unlocked")
-            self?.isLocked = false
-            self?.startScanningIfReady()
-            self?.unlockTime = Date().timeIntervalSince1970
+            self?.btQueue.async { [weak self] in
+                guard let self = self else { return }
+                logger.info("screen is unlocked")
+                self.isLocked = false
+                self.unlockTime = Date().timeIntervalSince1970
+                self.startScanningIfReady()
+            }
         }
     }
     
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
-        case .poweredOn:     logger.info("Bluetooth ON")
+        case .poweredOn:
+            logger.info("Bluetooth ON")
+            startScanningIfReady()
         case .poweredOff:    logger.info("Bluetooth OFF")
         case .unauthorized:  logger.info("unauthorized")
         case .unsupported:   logger.info("unsupported")
@@ -143,6 +158,7 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     
     func startScanningIfReady() {
         if manager.state == .poweredOn {
+            startTime = nil
             manager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
         }
     }
