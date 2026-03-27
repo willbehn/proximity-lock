@@ -12,7 +12,7 @@ struct ProximityLockView: View {
     @State private var isEditing = false
     
     private enum Metrics {
-        static let cardPadding: CGFloat = 12
+        static let cardPadding: CGFloat = 8
         static let cardCornerRadius: CGFloat = 10
         static let cardBorderWidth: CGFloat = 1
     }
@@ -56,11 +56,13 @@ struct ProximityLockView: View {
                                 .monospacedDigit()
                         }
                         Spacer()
+                        /*
                         Text(formatRSSI(scanner.threshold))
                             .font(.caption2.weight(.semibold))
                             .monospacedDigit()
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
+                         */
                     }
                     
                     HStack {
