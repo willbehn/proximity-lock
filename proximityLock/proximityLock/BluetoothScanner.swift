@@ -38,6 +38,9 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     
     private let lockCenter = DistributedNotificationCenter.default()
     private var isLocked: Bool = false
+
+    // Controls whether proximity locking is active
+    private var proximityLockEnabled: Bool = true
     
     
     // Id for apple enheter BT advertisement
@@ -114,13 +117,10 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
         
         
         guard RSSI.intValue != 127 else { return }
-        guard !isLocked else { return }
         
         let now = Date().timeIntervalSince1970
         
         if startTime == nil {startTime = now}
-        
-        if let lt = self.unlockTime, now - lt <= 60 { return }
         
         if let manufacturerKey = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
            manufacturerKey.count >= 2, manufacturerKey[0] == appleLE0, manufacturerKey[1] == appleLE1 {
@@ -134,22 +134,21 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
                 
                 
                 if let selected = self.selectedDevice, currentDevice.id == selected.id {
-                    //print("[][APPLE] RSSI=\(rssi) dBm m name=\(name)")
-                    //print("id=\(peripheral.identifier.uuidString)")
-                    
                     let smoothed = filter.update(measuredRSSI: RSSI.doubleValue, time: now)
-                    
                     rssiPublisher.send(smoothed)
-                    
                     logger.info("smoothed=\(smoothed) VS normal=\(RSSI.doubleValue)")
-                    
-                    guard (now - (startTime ?? 0.0)) > 25 else { return }
-                    
-                    if smoothed < threshold{
-                        logger.info("LOCKING at \(Date()) rssi=\(smoothed)")
+
+                    if proximityLockEnabled && !isLocked {
+                        if let lt = self.unlockTime, now - lt <= 60 {
+                            return
+                        }
                         
-                        startScreenSaver()
-                        
+                        guard (now - (startTime ?? 0.0)) > 25 else { return }
+
+                        if smoothed < threshold {
+                            logger.info("LOCKING at \(Date()) rssi=\(smoothed)")
+                            startScreenSaver()
+                        }
                     }
                 }
             }
@@ -173,6 +172,12 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     
     func updateSelectedDevice(newDevice: DeviceItem) {
         self.selectedDevice = newDevice
+    }
+    
+    func setProximityLockEnabled(_ enabled: Bool) {
+        btQueue.async { [weak self] in
+            self?.proximityLockEnabled = enabled
+        }
     }
 }
 
