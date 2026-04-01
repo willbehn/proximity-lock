@@ -1,4 +1,4 @@
-name: iOS CI
+name: macOS CI
 
 on:
   push:
@@ -9,16 +9,18 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Build (Xcode project)
         run: |
+          set -o pipefail
           xcodebuild \
-            -project  proximityLock/proximityLock.xcodeproj \
+            -project proximityLock/proximityLock.xcodeproj \
             -scheme proximityLock \
             -configuration Debug \
             -sdk macosx \
+            -destination 'platform=macOS' \
             CODE_SIGNING_ALLOWED=NO \
             build
-
-
