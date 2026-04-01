@@ -26,35 +26,6 @@ struct ProximityLockView: View {
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 12) {
-                
-                // First-time setup banner
-                if settings.isFirstTimeLocking {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "info.circle.fill")
-                                .foregroundStyle(.blue)
-                            Text("First Time Setup")
-                                .font(.subheadline.weight(.semibold))
-                        }
-                        Text("Select a Bluetooth device below and adjust the threshold to get started. Make sure \"Require password after screen saver begins\" is enabled in System Settings > Lock Screen.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        
-                        Button("Got it!") {
-                            settings.isFirstTimeLocking = false
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
-                    }
-                    .padding(Metrics.cardPadding)
-                    .background(.blue.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: Metrics.cardCornerRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
-                            .stroke(.blue.opacity(0.3), lineWidth: Metrics.cardBorderWidth)
-                    )
-                }
-                
                 HStack(spacing: 8) {
                     Image(systemName: "lock.circle.fill")
                         .imageScale(.large)
@@ -74,6 +45,16 @@ struct ProximityLockView: View {
                     .onChange(of: scanner.isOn) { _, newValue in
                         if newValue { scanner.start() } else { scanner.stop() }
                     }
+                }
+                
+                if settings.isFirstTimeLocking {
+                    IsFirstTimeView(settings: settings)
+                        .padding(Metrics.cardPadding)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
+                                .stroke(.quaternary, lineWidth: Metrics.cardBorderWidth)
+                        )
+                        .background(.blue.opacity(0.1))
                 }
                 
                 VStack(alignment: .leading, spacing: 10) {
