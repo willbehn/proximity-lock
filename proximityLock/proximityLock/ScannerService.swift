@@ -37,30 +37,52 @@ final class ScannerService: ObservableObject {
     private let sampleCount: Int = 30
     
     @Published var isOn = false
-    @Published var threshold: Double
+    @Published var threshold: Double {
+        didSet {
+            scanner.updateThreshold(newThreshold: threshold)
+            settings.threshold = threshold
+        }
+    }
     @Published var lastObservations: [Double]
     @Published var devices: Set<DeviceItem>
-    @Published var selectedDevice: DeviceItem?
+    @Published var selectedDevice: DeviceItem? {
+        didSet {
+            if let device = selectedDevice {
+                scanner.updateSelectedDevice(newDevice: device)
+                settings.selectedDevice = device
+            }
+        }
+    }
     
     private var samples: RSSIWindow
     
     private var scanner: BluetoothScanner = BluetoothScanner()
+    private let settings: SettingsService
     
     private var rssiCancellable: AnyCancellable?
     
     private var publishEvery: Int = 4
     private var tick: Int = 0
-     
-    init() {
-        self.threshold = scanner.threshold
+    
+    init(settings: SettingsService) {
+        self.settings = settings
+        
+        self.threshold = settings.threshold
+        self.selectedDevice = settings.selectedDevice
         self.samples = RSSIWindow(maxCount: sampleCount)
         self.lastObservations = []
         self.devices = scanner.devices
+        self.isOn = settings.proximityLockEnabled
+        
+        scanner.updateThreshold(newThreshold: settings.threshold)
+        if let device = settings.selectedDevice {
+            scanner.updateSelectedDevice(newDevice: device)
+        }
     }
     
+
+    
     func start() {
-        guard isOn else { return }
-        
         isOn = true
 
         scanner.startScanningIfReady()
@@ -82,25 +104,12 @@ final class ScannerService: ObservableObject {
     }
 
     func stop() {
-        guard !isOn else { return }
         isOn = false
         rssiCancellable = nil
         scanner.stopScanning()
     }
     
-    func updateThreshold() {
-        scanner.updateThreshold(newThreshold: self.threshold)
-        
-        self.threshold = scanner.threshold
-    }
-    
     func updateDevices() {
         self.devices = scanner.devices
-    }
-    
-    func selectDevice(_ device: DeviceItem) {
-        print("Bytter device til \(device.name)")
-        self.selectedDevice = device
-        scanner.updateSelectedDevice(newDevice: device)
     }
 }

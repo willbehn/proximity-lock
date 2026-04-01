@@ -48,7 +48,7 @@ struct DevicePickerView: View {
 
                         Button {
                             selectedID = device.id
-                            scanner.selectDevice(device)
+                            scanner.selectedDevice = device
                         } label: {
                             HStack(spacing: 8) {
                                 VStack(alignment: .leading, spacing: 2) {

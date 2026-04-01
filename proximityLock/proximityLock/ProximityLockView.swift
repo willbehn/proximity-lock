@@ -9,12 +9,14 @@ import SwiftUI
 
 struct ProximityLockView: View {
     @EnvironmentObject var scanner: ScannerService
+    @EnvironmentObject var settings: SettingsService
     @State private var isEditing = false
     
     private enum Metrics {
         static let cardPadding: CGFloat = 8
         static let cardCornerRadius: CGFloat = 10
         static let cardBorderWidth: CGFloat = 1
+        static let bottomPadding: CGFloat = 12
     }
     
     private let rssiRange: ClosedRange<Double> = -85.0 ... -35.0
@@ -24,6 +26,34 @@ struct ProximityLockView: View {
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 12) {
+                
+                // First-time setup banner
+                if settings.isFirstTimeLocking {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "info.circle.fill")
+                                .foregroundStyle(.blue)
+                            Text("First Time Setup")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        Text("Select a Bluetooth device below and adjust the threshold to get started. Make sure \"Require password after screen saver begins\" is enabled in System Settings > Lock Screen.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        
+                        Button("Got it!") {
+                            settings.isFirstTimeLocking = false
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                    }
+                    .padding(Metrics.cardPadding)
+                    .background(.blue.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: Metrics.cardCornerRadius))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
+                            .stroke(.blue.opacity(0.3), lineWidth: Metrics.cardBorderWidth)
+                    )
+                }
                 
                 HStack(spacing: 8) {
                     Image(systemName: "lock.circle.fill")
@@ -56,13 +86,6 @@ struct ProximityLockView: View {
                                 .monospacedDigit()
                         }
                         Spacer()
-                        /*
-                        Text(formatRSSI(scanner.threshold))
-                            .font(.caption2.weight(.semibold))
-                            .monospacedDigit()
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                         */
                     }
                     
                     HStack {
@@ -79,11 +102,7 @@ struct ProximityLockView: View {
                     
                     Slider(
                         value: $scanner.threshold,
-                        in: rssiRange,
-                        onEditingChanged: { editing in
-                            isEditing = editing
-                            if !editing { scanner.updateThreshold() }
-                        }
+                        in: rssiRange
                     )
                     .tint(.accentColor)
                 }
@@ -120,7 +139,7 @@ struct ProximityLockView: View {
                 .buttonStyle(.plain)
             
             }
-            .padding(Metrics.cardPadding)
+            .padding(Metrics.bottomPadding)
             .frame(width: 300)
         }
     }
