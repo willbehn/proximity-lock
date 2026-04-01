@@ -6,7 +6,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/willbehn/proximity-lock">
-    <img src="proximityLock/proximityLock/icons/icon_512x512.png" alt="Logo" width="80" height="80">
+    <img src="images/icon-test.png" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">ProximityLock</h3>
