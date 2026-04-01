@@ -26,9 +26,9 @@ struct ProximityLockView: View {
                 if settings.isFirstTimeLocking {
                     MessageView(
                         settings: settings,
-                        message: "Select a Bluetooth device below and adjust the rssi threshold to get started. Wait for around 30 secods so we get intial reading,then porxiimty lock is active when you see the graph",
+                        message: "Welcome to ProximityLock!\n\nHere’s a quick guide to get you started:\n1. Select a Bluetooth device below, this device will be used to estimate your distance from your Mac.\n2. Turn on Proximity Lock using the toggle at the top.\n3. Adjust the lock threshold slider to control sensitivity, lower values require the device to be farther away before locking, while higher values lock sooner.\n4. Wait a short moment while enough signal samples are collected for accurate tracking.\n\nOnce everything is set up, your Mac will automatically lock when the selected device moves out of range!",
                         style: .info,
-                        title: "First Time Setup",
+                        title: "Getting started",
                         showsAction: true
                     )
                 }
