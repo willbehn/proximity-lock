@@ -39,6 +39,7 @@ final class ScannerService: ObservableObject {
     @Published var isOn = false {
         didSet {
             settings.proximityLockEnabled = isOn
+            scanner.setProximityLockEnabled(isOn)
         }
     }
     @Published var threshold: Double {
@@ -77,14 +78,18 @@ final class ScannerService: ObservableObject {
         self.lastObservations = []
         self.devices = scanner.devices
         self.isOn = settings.proximityLockEnabled
+        scanner.setProximityLockEnabled(self.isOn)
         
         scanner.updateThreshold(newThreshold: settings.threshold)
         if let device = settings.selectedDevice {
             scanner.updateSelectedDevice(newDevice: device)
         }
+        
+        // Auto-start scanning if enabled from settings
+        if self.isOn {
+            start()
+        }
     }
-    
-
     
     func start() {
         isOn = true
@@ -117,3 +122,4 @@ final class ScannerService: ObservableObject {
         self.devices = scanner.devices
     }
 }
+
