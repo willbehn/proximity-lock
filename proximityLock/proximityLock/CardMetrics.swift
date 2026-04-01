@@ -2,7 +2,7 @@
 import SwiftUI
 
 enum CardMetrics {
-    static let cardPadding: CGFloat = 4
+    static let cardPadding: CGFloat = 6
     static let cardCornerRadius: CGFloat = 10
     static let cardBorderWidth: CGFloat = 1
     static let spacing: CGFloat = 8
