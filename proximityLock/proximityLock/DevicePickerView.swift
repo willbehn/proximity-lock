@@ -62,7 +62,7 @@ struct DevicePickerView: View {
             Button(action: {
                 scanner.updateDevices()
             }) {
-                Label("Rescan", systemImage: "arrow.clockwise")
+                Label("Scan for devices", systemImage: "arrow.clockwise")
             }
             .buttonStyle(.bordered)
             .controlSize(.small)

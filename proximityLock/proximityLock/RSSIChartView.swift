@@ -32,7 +32,7 @@ struct RSSIChartView: View {
                 HStack {
                     ProgressView()
                         .controlSize(.small)
-                    Text(String(localized: "Waiting for enough samples..."))
+                    Text(String(localized: "Waiting for signal data..."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

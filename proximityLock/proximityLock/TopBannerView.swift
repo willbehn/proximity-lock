@@ -20,8 +20,7 @@ struct TopBannerView: View {
             Spacer()
             
             Toggle(isOn: $scanner.proximityLockEnabled) {
-                Label(scanner.proximityLockEnabled ? String(localized: "On") : String(localized: "Off"),
-                      systemImage: "circle.fill")
+               Image(systemName: "circle.fill")
                 .labelStyle(.titleAndIcon)
                 .foregroundStyle(scanner.proximityLockEnabled ? .green : .secondary)
                 .help(String(localized: "Scanner status"))

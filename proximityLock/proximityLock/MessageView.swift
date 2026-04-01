@@ -50,7 +50,10 @@ struct MessageView: View {
             }
         }
         .padding(CardMetrics.cardPadding)
-        .background(style.tint.opacity(0.1))
+        .background(
+            RoundedRectangle(cornerRadius: CardMetrics.cardCornerRadius)
+                .fill(style.tint.opacity(0.1))
+        )
         .overlay(
             RoundedRectangle(cornerRadius: CardMetrics.cardCornerRadius)
                 .stroke(style.tint.opacity(0.3), lineWidth: CardMetrics.cardBorderWidth)

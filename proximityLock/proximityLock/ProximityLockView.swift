@@ -26,7 +26,7 @@ struct ProximityLockView: View {
                 if settings.isFirstTimeLocking {
                     MessageView(
                         settings: settings,
-                        message: "Welcome to ProximityLock!\n\nHere’s a quick guide to get you started:\n1. Select a Bluetooth device below, this device will be used to estimate your distance from your Mac.\n2. Turn on Proximity Lock using the toggle at the top.\n3. Adjust the lock threshold slider to control sensitivity, lower values require the device to be farther away before locking, while higher values lock sooner.\n4. Wait a short moment while enough signal samples are collected for accurate tracking.\n\nOnce everything is set up, your Mac will automatically lock when the selected device moves out of range!",
+                        message: "Welcome to ProximityLock!\n\nTo get started:\n1. Select a Bluetooth device below, this device will be used to estimate your distance from your Mac.\n2. Turn on Proximity Lock using the toggle at the top.\n3. Adjust the lock threshold slider to control sensitivity. Lower values require the device to be farther away before locking, while higher values lock sooner.\n4. Wait a short moment while enough signal samples are collected for accurate tracking.\n\nOnce everything is set up, your Mac will automatically lock when the selected device moves out of range!",
                         style: .info,
                         title: "Getting started",
                         showsAction: true
@@ -35,7 +35,7 @@ struct ProximityLockView: View {
                 
                 MessageView(
                     settings: settings,
-                    message: "To ensure ProximityLock works properly, please enable the immediate screen lock setting. Go to Settings → Lock Screen → \"Require password after screen saver begins or display is turned off\" and set it to \"Immediately\".",
+                    message: "To ensure ProximityLock works properly, please enable the immediate screen lock setting.\nGo to Settings → Lock Screen → \"Require password after screen saver begins or display is turned off\" and set it to \"Immediately\".",
                     style: .warning,
                     title: "Security Notice",
                     showsAction: false
