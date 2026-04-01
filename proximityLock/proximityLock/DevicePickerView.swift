@@ -25,16 +25,13 @@ struct DevicePickerView: View {
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.primary)
                     
-                    Spacer()
-                    
-                    Button(action: {
-                        scanner.updateDevices()
-                    }) {
-                        Label("Rescan", systemImage: "arrow.clockwise")
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
                 }
+            
+            if let selected = scanner.selectedDevice {
+                Text("Selected: \(selected.name)")
+                    .font(.footnote)
+                    .foregroundStyle(.primary)
+            }
             
             Text("Choose Device")
                 .font(.caption)
@@ -44,22 +41,14 @@ struct DevicePickerView: View {
             ScrollView {
                 LazyVStack(spacing: 4) {
                     ForEach(sortedDevices) { device in
-                        let isSelected = (selectedID == device.id)
-
                         Button {
                             selectedID = device.id
                             scanner.selectedDevice = device
                         } label: {
-                            HStack(spacing: 4) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(device.name)
-                                        .font(.subheadline)
-                                }
-
+                            HStack {
+                                Text(device.name)
+                                    .font(.subheadline)
                                 Spacer()
-
-                                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                                    .imageScale(.medium)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -69,6 +58,14 @@ struct DevicePickerView: View {
                 .padding(.vertical, 2)
             }
             .frame(height: 60)
+            
+            Button(action: {
+                scanner.updateDevices()
+            }) {
+                Label("Rescan", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
         }
         .padding(CardMetrics.cardPadding)
         .overlay(
@@ -78,5 +75,4 @@ struct DevicePickerView: View {
     }
     
 }
-
 

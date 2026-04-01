@@ -36,7 +36,11 @@ struct RSSIWindow {
 final class ScannerService: ObservableObject {
     private let sampleCount: Int = 30
     
-    @Published var isOn = false
+    @Published var isOn = false {
+        didSet {
+            settings.proximityLockEnabled = isOn
+        }
+    }
     @Published var threshold: Double {
         didSet {
             scanner.updateThreshold(newThreshold: threshold)

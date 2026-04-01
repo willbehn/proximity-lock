@@ -14,7 +14,7 @@ struct ProximityLockApp: App {
     
     init() {
         // For testing av first time, TODO husk å fjern
-        UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
+        // UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
         
         let settings = SettingsService()
         _settings = StateObject(wrappedValue: settings)
