@@ -93,11 +93,6 @@ struct ProximityLockView: View {
                     )
                 
                 DevicePickerView(scanner: scanner)
-                    .padding(Metrics.cardPadding)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
-                            .stroke(.quaternary, lineWidth: Metrics.cardBorderWidth)
-                    )
                 
                 Divider()
                 

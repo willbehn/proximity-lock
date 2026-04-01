@@ -19,7 +19,7 @@ struct DevicePickerView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: CardMetrics.spacing) {
                 HStack {
                     Text("Devices")
                         .font(.subheadline.weight(.semibold))
@@ -42,7 +42,7 @@ struct DevicePickerView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             ScrollView {
-                LazyVStack(spacing: 8) {
+                LazyVStack(spacing: 4) {
                     ForEach(sortedDevices) { device in
                         let isSelected = (selectedID == device.id)
 
@@ -50,7 +50,7 @@ struct DevicePickerView: View {
                             selectedID = device.id
                             scanner.selectedDevice = device
                         } label: {
-                            HStack(spacing: 8) {
+                            HStack(spacing: 4) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(device.name)
                                         .font(.subheadline)
@@ -68,8 +68,15 @@ struct DevicePickerView: View {
                 }
                 .padding(.vertical, 2)
             }
-            .frame(height: 100)
+            .frame(height: 60)
         }
+        .padding(CardMetrics.cardPadding)
+        .overlay(
+            RoundedRectangle(cornerRadius: CardMetrics.cardCornerRadius)
+                .stroke(.quaternary, lineWidth: CardMetrics.cardBorderWidth)
+        )
     }
+    
 }
+
 
