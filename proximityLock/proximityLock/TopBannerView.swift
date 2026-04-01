@@ -11,7 +11,7 @@ struct TopBannerView: View {
     @ObservedObject var scanner: ScannerService
     
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: CardMetrics.spacing) {
             Image(systemName: "lock.circle.fill")
                 .imageScale(.large)
             Text(String(localized: "Proximity Lock"))
@@ -31,5 +31,6 @@ struct TopBannerView: View {
                 if newValue { scanner.start() } else { scanner.stop() }
             }
         }
+        .padding(CardMetrics.cardPadding)
     }
 }

@@ -11,14 +11,7 @@ struct ProximityLockView: View {
     @EnvironmentObject var scanner: ScannerService
     @EnvironmentObject var settings: SettingsService
     @State private var isEditing = false
-    
-    private enum Metrics {
-        static let cardPadding: CGFloat = 4
-        static let cardCornerRadius: CGFloat = 10
-        static let cardBorderWidth: CGFloat = 1
-        static let bottomPadding: CGFloat = 12
-    }
-    
+
     private let rssiRange: ClosedRange<Double> = -85.0 ... -35.0
     
     private func formatRSSI(_ value: Double) -> String { "\(Int(value)) dBm" }
@@ -29,7 +22,6 @@ struct ProximityLockView: View {
             VStack(alignment: .leading, spacing: 8) {
                 
                 TopBannerView(scanner: scanner)
-                    .padding(Metrics.cardPadding)
                 
                 if settings.isFirstTimeLocking {
                     MessageView(
@@ -49,7 +41,7 @@ struct ProximityLockView: View {
                     showsAction: false
                 )
                 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: CardMetrics.spacing) {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Lock threshold")
@@ -79,17 +71,17 @@ struct ProximityLockView: View {
                     )
                     .tint(.accentColor)
                 }
-                .padding(Metrics.cardPadding)
+                .padding(CardMetrics.cardPadding)
                 .overlay(
-                    RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
-                        .stroke(.quaternary, lineWidth: Metrics.cardBorderWidth)
+                    RoundedRectangle(cornerRadius: CardMetrics.cardCornerRadius)
+                        .stroke(.quaternary, lineWidth: CardMetrics.cardBorderWidth)
                 )
                 
                 RSSIChartView(scanner: scanner)
-                    .padding(Metrics.cardPadding)
+                    .padding(CardMetrics.cardPadding)
                     .overlay(
-                        RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
-                            .stroke(.quaternary, lineWidth: Metrics.cardBorderWidth)
+                        RoundedRectangle(cornerRadius: CardMetrics.cardCornerRadius)
+                            .stroke(.quaternary, lineWidth: CardMetrics.cardBorderWidth)
                     )
                 
                 DevicePickerView(scanner: scanner)
@@ -107,7 +99,7 @@ struct ProximityLockView: View {
                 .buttonStyle(.plain)
             
             }
-            .padding(Metrics.bottomPadding)
+            .padding(CardMetrics.bottomPadding)
             .frame(width: 300)
         }
     }

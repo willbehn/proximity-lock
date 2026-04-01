@@ -28,14 +28,8 @@ struct MessageView: View {
     var title: String? = nil
     var showsAction: Bool = false
     
-    private enum Metrics {
-        static let cardCornerRadius: CGFloat = 10
-        static let cardBorderWidth: CGFloat = 1
-        static let spacing: CGFloat = 8
-    }
-    
     var body: some View {
-        VStack(alignment: .leading, spacing: Metrics.spacing) {
+        VStack(alignment: .leading, spacing: CardMetrics.spacing) {
             HStack(spacing: 6) {
                 Image(systemName: iconName)
                     .foregroundStyle(style.tint)
@@ -55,12 +49,11 @@ struct MessageView: View {
                 .controlSize(.small)
             }
         }
-        .padding(4)
+        .padding(CardMetrics.cardPadding)
         .background(style.tint.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: Metrics.cardCornerRadius))
         .overlay(
-            RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
-                .stroke(style.tint.opacity(0.3), lineWidth: Metrics.cardBorderWidth)
+            RoundedRectangle(cornerRadius: CardMetrics.cardCornerRadius)
+                .stroke(style.tint.opacity(0.3), lineWidth: CardMetrics.cardBorderWidth)
         )
     }
     
