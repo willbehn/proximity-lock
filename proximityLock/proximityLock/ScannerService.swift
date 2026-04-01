@@ -36,10 +36,10 @@ struct RSSIWindow {
 final class ScannerService: ObservableObject {
     private let sampleCount: Int = 30
     
-    @Published var isOn = false {
+    @Published var proximityLockEnabled = false {
         didSet {
-            settings.proximityLockEnabled = isOn
-            scanner.setProximityLockEnabled(isOn)
+            settings.proximityLockEnabled = proximityLockEnabled
+            scanner.setProximityLockEnabled(proximityLockEnabled)
         }
     }
     @Published var threshold: Double {
@@ -77,8 +77,8 @@ final class ScannerService: ObservableObject {
         self.samples = RSSIWindow(maxCount: sampleCount)
         self.lastObservations = []
         self.devices = scanner.devices
-        self.isOn = settings.proximityLockEnabled
-        scanner.setProximityLockEnabled(self.isOn)
+        self.proximityLockEnabled = settings.proximityLockEnabled
+        scanner.setProximityLockEnabled(self.proximityLockEnabled)
         
         scanner.updateThreshold(newThreshold: settings.threshold)
         if let device = settings.selectedDevice {
@@ -86,13 +86,13 @@ final class ScannerService: ObservableObject {
         }
         
         // Auto-start scanning if enabled from settings
-        if self.isOn {
+        if self.proximityLockEnabled {
             start()
         }
     }
     
     func start() {
-        isOn = true
+        proximityLockEnabled = true
 
         scanner.startScanningIfReady()
         
@@ -113,9 +113,10 @@ final class ScannerService: ObservableObject {
     }
 
     func stop() {
-        isOn = false
+        proximityLockEnabled = false
         rssiCancellable = nil
         scanner.stopScanning()
+        
     }
     
     func updateDevices() {

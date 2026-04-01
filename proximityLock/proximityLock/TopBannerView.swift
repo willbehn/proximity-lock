@@ -19,15 +19,15 @@ struct TopBannerView: View {
             
             Spacer()
             
-            Toggle(isOn: $scanner.isOn) {
-                Label(scanner.isOn ? String(localized: "On") : String(localized: "Off"),
+            Toggle(isOn: $scanner.proximityLockEnabled) {
+                Label(scanner.proximityLockEnabled ? String(localized: "On") : String(localized: "Off"),
                       systemImage: "circle.fill")
                 .labelStyle(.titleAndIcon)
-                .foregroundStyle(scanner.isOn ? .green : .secondary)
+                .foregroundStyle(scanner.proximityLockEnabled ? .green : .secondary)
                 .help(String(localized: "Scanner status"))
             }
             .toggleStyle(.switch)
-            .onChange(of: scanner.isOn) { _, newValue in
+            .onChange(of: scanner.proximityLockEnabled) { _, newValue in
                 if newValue { scanner.start() } else { scanner.stop() }
             }
         }
