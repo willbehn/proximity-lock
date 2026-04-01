@@ -13,7 +13,7 @@ struct ProximityLockView: View {
     @State private var isEditing = false
     
     private enum Metrics {
-        static let cardPadding: CGFloat = 8
+        static let cardPadding: CGFloat = 4
         static let cardCornerRadius: CGFloat = 10
         static let cardBorderWidth: CGFloat = 1
         static let bottomPadding: CGFloat = 12
@@ -25,37 +25,29 @@ struct ProximityLockView: View {
     
     var body: some View {
         VStack {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 8) {
-                    Image(systemName: "lock.circle.fill")
-                        .imageScale(.large)
-                    Text(String(localized: "Proximity Lock"))
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    Toggle(isOn: $scanner.isOn) {
-                        Label(scanner.isOn ? String(localized: "On") : String(localized: "Off"),
-                              systemImage: "circle.fill")
-                        .labelStyle(.titleAndIcon)
-                        .foregroundStyle(scanner.isOn ? .green : .secondary)
-                        .help(String(localized: "Scanner status"))
-                    }
-                    .toggleStyle(.switch)
-                    .onChange(of: scanner.isOn) { _, newValue in
-                        if newValue { scanner.start() } else { scanner.stop() }
-                    }
-                }
+            // Top banner and messages
+            VStack(alignment: .leading, spacing: 8) {
+                
+                TopBannerView(scanner: scanner)
+                    .padding(Metrics.cardPadding)
                 
                 if settings.isFirstTimeLocking {
-                    IsFirstTimeView(settings: settings)
-                        .padding(Metrics.cardPadding)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: Metrics.cardCornerRadius)
-                                .stroke(.quaternary, lineWidth: Metrics.cardBorderWidth)
-                        )
-                        .background(.blue.opacity(0.1))
+                    MessageView(
+                        settings: settings,
+                        message: "Select a Bluetooth device below and adjust the rssi threshold to get started. Wait for around 30 secods so we get intial reading,then porxiimty lock is active when you see the graph",
+                        style: .info,
+                        title: "First Time Setup",
+                        showsAction: true
+                    )
                 }
+                
+                MessageView(
+                    settings: settings,
+                    message: "To ensure ProximityLock works properly, please enable the immediate screen lock setting. Go to Settings → Lock Screen → \"Require password after screen saver begins or display is turned off\" and set it to \"Immediately\".",
+                    style: .warning,
+                    title: "Security Notice",
+                    showsAction: false
+                )
                 
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
