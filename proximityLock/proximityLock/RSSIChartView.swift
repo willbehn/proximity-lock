@@ -27,35 +27,45 @@ struct RSSIChartView: View {
             Text("Bluetooth RSSI (last \(scanner.lastObservations.count) samples)")
                 .font(.subheadline.weight(.semibold))
                 .monospacedDigit()
-            
-            Chart {
-                ForEach(Array(scanner.lastObservations.enumerated()), id: \.offset) { idx, rssi in
-                    LineMark(
-                        x: .value("Idx", idx),
-                        y: .value("RSSI", rssi)
-                    )
+
+            if scanner.isStarting {
+                HStack {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text(String(localized: "Waiting for enough samples..."))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-                
-                RuleMark(y: .value("Threshold", scanner.threshold))
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4]))
-                    .foregroundStyle(Color.secondary)
-                    .annotation(position: .top, alignment: .leading) {
-                        Text("threshold")
-                            .font(.caption2)
-                            .foregroundStyle(.primary)
-                            .monospacedDigit()
+                .frame(height: Metrics.chartHeight)
+                .padding(Metrics.chartPadding)
+            } else {
+                Chart {
+                    ForEach(Array(scanner.lastObservations.enumerated()), id: \.offset) { idx, rssi in
+                        LineMark(
+                            x: .value("Idx", idx),
+                            y: .value("RSSI", rssi)
+                        )
                     }
-                
+                    RuleMark(y: .value("Threshold", scanner.threshold))
+                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4]))
+                        .foregroundStyle(Color.secondary)
+                        .annotation(position: .top, alignment: .leading) {
+                            Text("threshold")
+                                .font(.caption2)
+                                .foregroundStyle(.primary)
+                                .monospacedDigit()
+                        }
+                }
+                .chartYScale(domain: rssiRange)
+                .chartXAxis(.hidden)
+                .frame(height: Metrics.chartHeight)
+                .padding(Metrics.chartPadding)
+
+                Text("Current threshold for RSSI detection: \(formatRSSI(scanner.threshold))")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
             }
-            .chartYScale(domain: rssiRange)
-            .chartXAxis(.hidden)
-            .frame(height: Metrics.chartHeight)
-            .padding(Metrics.chartPadding)
-            
-            Text("Current threshold for RSSI detection: \(formatRSSI(scanner.threshold))")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
         }
     }
 }

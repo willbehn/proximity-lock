@@ -58,6 +58,7 @@ final class ScannerService: ObservableObject {
             }
         }
     }
+    @Published var isStarting: Bool = true
     
     private var samples: RSSIWindow
     
@@ -93,6 +94,7 @@ final class ScannerService: ObservableObject {
     
     func start() {
         proximityLockEnabled = true
+        isStarting = true
 
         scanner.startScanningIfReady()
         
@@ -108,12 +110,14 @@ final class ScannerService: ObservableObject {
                 
                 if self.tick % self.publishEvery == 0, self.samples.values.count == self.sampleCount{
                     self.lastObservations = self.samples.values
+                    isStarting = false
                 }
             }
     }
 
     func stop() {
         proximityLockEnabled = false
+        isStarting = true
         rssiCancellable = nil
         scanner.stopScanning()
         
