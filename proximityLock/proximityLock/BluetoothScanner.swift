@@ -15,7 +15,6 @@ import os
 
 private let logger = Logger(subsystem: "willbehn.proximityLock", category: "Bluetooth")
 
-
 @MainActor
 class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     private var manager: CBCentralManager!
@@ -71,29 +70,37 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     private func handleDiscoveredPeripheral(_ peripheral: CBPeripheral,
                                            advertisementData: [String: Any],
                                            rssi RSSI: NSNumber) {
+        
         guard RSSI.intValue != 127 else { return }
+        guard isAppleDevice(advertisementData: advertisementData) else { return }
+        
         
         let now = Date().timeIntervalSince1970
         
         if startTime == nil { startTime = now }
         
-        if let manufacturerKey = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
-           manufacturerKey.count >= 2, manufacturerKey[0] == appleLE0, manufacturerKey[1] == appleLE1 {
-            
-            if let name = (advertisementData[CBAdvertisementDataLocalNameKey] as? String ?? peripheral.name),
-               !name.isEmpty {
+        if let name = (advertisementData[CBAdvertisementDataLocalNameKey] as? String ?? peripheral.name),
+            !name.isEmpty {
                 
-                let currentDevice = DeviceItem(id: peripheral.identifier.uuidString, name: name)
-                devices.insert(currentDevice)
+            let currentDevice = DeviceItem(id: peripheral.identifier.uuidString, name: name)
+            devices.insert(currentDevice)
                 
-                if let selected = self.selectedDevice, currentDevice.id == selected.id {
-                    let smoothed = filter.update(measuredRSSI: RSSI.doubleValue, time: now)
-                    rssiPublisher.send(smoothed)
-                    logger.info("smoothed=\(smoothed) VS normal=\(RSSI.doubleValue)")
-                }
+            if let selected = self.selectedDevice, currentDevice.id == selected.id {
+                let smoothed = filter.update(measuredRSSI: RSSI.doubleValue, time: now)
+                rssiPublisher.send(smoothed)
+                logger.info("smoothed=\(smoothed) VS normal=\(RSSI.doubleValue)")
             }
         }
     }
+    
+    private func isAppleDevice(advertisementData: [String: Any]) -> Bool {
+        if let manufacturerKey = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
+           manufacturerKey.count >= 2, manufacturerKey[0] == appleLE0, manufacturerKey[1] == appleLE1 {
+            return true
+        }
+        return false
+    }
+    
     
     func startScanningIfReady() {
         if manager.state == .poweredOn {
