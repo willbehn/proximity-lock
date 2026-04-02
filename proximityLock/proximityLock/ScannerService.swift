@@ -39,7 +39,7 @@ final class ScannerService: ObservableObject {
     @Published var proximityLockEnabled = false {
         didSet {
             settings.proximityLockEnabled = proximityLockEnabled
-            scanner.setProximityLockEnabled(proximityLockEnabled)
+            lockMonitor.isEnabled = proximityLockEnabled
         }
     }
     @Published var threshold: Double {
@@ -63,6 +63,7 @@ final class ScannerService: ObservableObject {
     private var samples: RSSIWindow
     
     private var scanner: BluetoothScanner = BluetoothScanner()
+    private var lockMonitor: LockMonitor = LockMonitor()
     private let settings: SettingsService
     
     private var rssiCancellable: AnyCancellable?
@@ -79,16 +80,28 @@ final class ScannerService: ObservableObject {
         self.lastObservations = []
         self.devices = scanner.devices
         self.proximityLockEnabled = settings.proximityLockEnabled
-        scanner.setProximityLockEnabled(self.proximityLockEnabled)
+        lockMonitor.isEnabled = self.proximityLockEnabled
         
         scanner.updateThreshold(newThreshold: settings.threshold)
         if let device = settings.selectedDevice {
             scanner.updateSelectedDevice(newDevice: device)
         }
         
-        // Auto-start scanning if enabled from settings
+        // Setup lock monitor callbacks
+        setupLockMonitor()
+        
         if self.proximityLockEnabled {
             start()
+        }
+    }
+    
+    private func setupLockMonitor() {
+        lockMonitor.onScreenLocked = { [weak self] in
+            self?.scanner.stopScanning()
+        }
+        
+        lockMonitor.onScreenUnlocked = { [weak self] in
+            self?.scanner.startScanningIfReady()
         }
     }
     
@@ -100,17 +113,24 @@ final class ScannerService: ObservableObject {
         
         self.rssiCancellable = scanner.rssiPublisher
             .receive(on: DispatchQueue.main)
-            .sink{
-                [weak self] rssi in
+            .sink { [weak self] rssi in
+                guard let self else { return }
                 
-                guard let self else {return }
                 self.samples.add(rssi)
-                
                 self.tick &+= 1
                 
-                if self.tick % self.publishEvery == 0, self.samples.values.count == self.sampleCount{
+                if self.tick % self.publishEvery == 0, self.samples.values.count == self.sampleCount {
                     self.lastObservations = self.samples.values
                     isStarting = false
+                }
+                
+                // Check if we should lock based on proximity
+                if self.lockMonitor.shouldLock(
+                    rssi: rssi,
+                    threshold: self.threshold,
+                    scanStartTime: self.scanner.startTime
+                ) {
+                    self.lockMonitor.triggerLock()
                 }
             }
     }

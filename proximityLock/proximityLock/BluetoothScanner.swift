@@ -29,19 +29,10 @@ struct DeviceItem: Hashable, Identifiable {
     }
 }
 
+@MainActor
 class BluetoothScanner: NSObject, CBCentralManagerDelegate {
-    private let btQueue = DispatchQueue(label: "bt.queue")
     private var manager: CBCentralManager!
-    private var startTime: Double? = nil
-    
-    private var unlockTime: Double? = nil
-    
-    private let lockCenter = DistributedNotificationCenter.default()
-    private var isLocked: Bool = false
-
-    // Controls whether proximity locking is active
-    private var proximityLockEnabled: Bool = true
-    
+    private(set) var startTime: Double? = nil
     
     // Id for apple enheter BT advertisement
     let appleLE0: UInt8 = 0x4C
@@ -63,40 +54,17 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     
     override init() {
         super.init()
-        manager = CBCentralManager(delegate: self, queue: btQueue)
-        
-        
-        
-        lockCenter.addObserver(
-            forName: NSNotification.Name("com.apple.screenIsLocked"),
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.btQueue.async { [weak self] in
-                guard let self = self else { return }
-                logger.info("screen is locked")
-                self.isLocked = true
-                self.stopScanning()
-            }
-        }
-        
-        lockCenter.addObserver(
-            forName: NSNotification.Name("com.apple.screenIsUnlocked"),
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.btQueue.async { [weak self] in
-                guard let self = self else { return }
-                logger.info("screen is unlocked")
-                self.isLocked = false
-                self.unlockTime = Date().timeIntervalSince1970
-                self.startScanningIfReady()
-            }
+        manager = CBCentralManager(delegate: self, queue: nil)
+    }
+    
+    nonisolated func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        Task { @MainActor in
+            handleStateUpdate(central.state)
         }
     }
     
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        switch central.state {
+    private func handleStateUpdate(_ state: CBManagerState) {
+        switch state {
         case .poweredOn:
             logger.info("Bluetooth ON")
             startScanningIfReady()
@@ -110,17 +78,23 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     }
     
     
-    func centralManager(_ central: CBCentralManager,
+    nonisolated func centralManager(_ central: CBCentralManager,
                         didDiscover peripheral: CBPeripheral,
                         advertisementData: [String : Any],
                         rssi RSSI: NSNumber) {
-        
-        
+        Task { @MainActor in
+            handleDiscoveredPeripheral(peripheral, advertisementData: advertisementData, rssi: RSSI)
+        }
+    }
+    
+    private func handleDiscoveredPeripheral(_ peripheral: CBPeripheral,
+                                           advertisementData: [String: Any],
+                                           rssi RSSI: NSNumber) {
         guard RSSI.intValue != 127 else { return }
         
         let now = Date().timeIntervalSince1970
         
-        if startTime == nil {startTime = now}
+        if startTime == nil { startTime = now }
         
         if let manufacturerKey = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
            manufacturerKey.count >= 2, manufacturerKey[0] == appleLE0, manufacturerKey[1] == appleLE1 {
@@ -128,28 +102,13 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
             if let name = (advertisementData[CBAdvertisementDataLocalNameKey] as? String ?? peripheral.name),
                !name.isEmpty {
                 
-                
-                let currentDevice: DeviceItem = DeviceItem(id: peripheral.identifier.uuidString, name: name)
+                let currentDevice = DeviceItem(id: peripheral.identifier.uuidString, name: name)
                 devices.insert(currentDevice)
-                
                 
                 if let selected = self.selectedDevice, currentDevice.id == selected.id {
                     let smoothed = filter.update(measuredRSSI: RSSI.doubleValue, time: now)
                     rssiPublisher.send(smoothed)
                     logger.info("smoothed=\(smoothed) VS normal=\(RSSI.doubleValue)")
-
-                    if proximityLockEnabled && !isLocked {
-                        if let lt = self.unlockTime, now - lt <= 60 {
-                            return
-                        }
-                        
-                        guard (now - (startTime ?? 0.0)) > 25 else { return }
-
-                        if smoothed < threshold {
-                            logger.info("LOCKING at \(Date()) rssi=\(smoothed)")
-                            startScreenSaver()
-                        }
-                    }
                 }
             }
         }
@@ -172,26 +131,6 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     
     func updateSelectedDevice(newDevice: DeviceItem) {
         self.selectedDevice = newDevice
-    }
-    
-    func setProximityLockEnabled(_ enabled: Bool) {
-        btQueue.async { [weak self] in
-            self?.proximityLockEnabled = enabled
-        }
-    }
-}
-
-func startScreenSaver() {
-    let saverPath = "/System/Library/CoreServices/ScreenSaverEngine.app"
-    let url = URL(fileURLWithPath: saverPath)
-    let config = NSWorkspace.OpenConfiguration()
-    
-    DispatchQueue.main.async {
-        NSWorkspace.shared.openApplication(at: url, configuration: config) { _, error in
-            if let error = error {
-                logger.error("Error \(error)")
-            }
-        }
     }
 }
 
