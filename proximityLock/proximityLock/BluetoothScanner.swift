@@ -16,19 +16,6 @@ import os
 private let logger = Logger(subsystem: "willbehn.proximityLock", category: "Bluetooth")
 
 
-struct DeviceItem: Hashable, Identifiable {
-    let id: String
-    let name: String
-
-    static func == (lhs: DeviceItem, rhs: DeviceItem) -> Bool {
-        return lhs.id == rhs.id
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-}
-
 @MainActor
 class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     private var manager: CBCentralManager!
@@ -45,12 +32,6 @@ class BluetoothScanner: NSObject, CBCentralManagerDelegate {
     let rssiPublisher = PassthroughSubject<Double, Never>()
     
     private var filter = KalmanFilterRSSI(initialRSSI: -70)
-    
-    let formatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm:ss"
-        return f
-    }()
     
     override init() {
         super.init()
