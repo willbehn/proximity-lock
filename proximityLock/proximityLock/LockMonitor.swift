@@ -21,6 +21,7 @@ final class LockMonitor: ObservableObject {
     
     private var unlockTime: TimeInterval?
     private let lockCenter = DistributedNotificationCenter.default()
+    private var hasTriggeredLock: Bool = false
     
     var onScreenLocked: (() -> Void)?
     var onScreenUnlocked: (() -> Void)?
@@ -53,12 +54,14 @@ final class LockMonitor: ObservableObject {
     
     private func handleScreenLocked() {
         logger.info("Screen is locked")
+        hasTriggeredLock = true
         isLocked = true
         onScreenLocked?()
     }
     
     private func handleScreenUnlocked() {
         logger.info("Screen is unlocked")
+        hasTriggeredLock = false
         isLocked = false
         unlockTime = Date().timeIntervalSince1970
         onScreenUnlocked?()
@@ -69,6 +72,12 @@ final class LockMonitor: ObservableObject {
         threshold: Double,
         scanStartTime: TimeInterval?
     ) -> Bool {
+        
+        guard !hasTriggeredLock else {
+            logger.debug("Lock already triggered")
+            return false
+        }
+        
         // Ikke lås hvis låsing er skrudd av
         guard isEnabled else {
             logger.debug("Lock disabled")
