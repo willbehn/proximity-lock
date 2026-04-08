@@ -1,7 +1,6 @@
 ![Build Status](https://github.com/willbehn/proximity-lock/actions/workflows/swift.yml/badge.svg)
 ![License](https://img.shields.io/github/license/willbehn/proximity-lock)
 ![Swift](https://img.shields.io/badge/Swift-6.2-orange)
-![Status](https://img.shields.io/badge/status-Work%20in%20Progress-yellow)
 
 <br />
 <div align="center">
@@ -26,7 +25,7 @@ You can also adjust the lock threshold to control when your Mac locks, allowing 
 
 > This project is currently a work in progress, but feel free to try it out. All feedback is welcome!
 
-![](images/example.jpg)
+**[View demo & screenshots](https://willbehn.github.io/proximity-lock-web/)**
 
 ### Why use ProximityLock?
 ProximityLock isn’t for everyone, but it helps if you sometimes forget to lock your Mac when stepping away.
