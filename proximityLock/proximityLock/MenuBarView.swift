@@ -10,8 +10,7 @@ import SwiftUI
 struct MenuBarView: View {
     @EnvironmentObject var scanner: ScannerService
     @EnvironmentObject var settings: SettingsService
-    @State private var showingPreferences = false
-    @State private var showingOnboarding = false
+    @Environment(\.openWindow) private var openWindow
     
     private let rssiRange: ClosedRange<Double> = -85.0 ... -35.0
     
@@ -19,7 +18,6 @@ struct MenuBarView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Status Header
             VStack(spacing: 8) {
                 HStack {
                     Image(systemName: scanner.proximityLockEnabled ? "lock.circle.fill" : "lock.open.fill")
@@ -54,38 +52,23 @@ struct MenuBarView: View {
                         Text(device.name)
                             .font(.subheadline)
                         Spacer()
-                        Button {
-                            showingPreferences = true
-                        } label: {
-                            Text("Change")
-                                .font(.caption)
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(.blue)
                     }
                 } else {
-                    Button {
-                        showingPreferences = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.orange)
-                            Text("No device selected")
-                                .font(.subheadline)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(8)
-                        .background(Color.orange.opacity(0.1))
-                        .cornerRadius(6)
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                            .imageScale(.small)
+                        Text("No device selected")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
                     }
-                    .buttonStyle(.plain)
                 }
             }
             .padding(12)
             
             Divider()
             
-            // Quick Threshold Adjust
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("Sensitivity")
@@ -106,18 +89,19 @@ struct MenuBarView: View {
             
             Divider()
             
-            // Compact RSSI Chart
-            RSSIChartView(scanner: scanner)
-                .frame(height: 80)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+            // RSSI Chart
+            VStack(spacing: 0) {
+                RSSIChartView(scanner: scanner)
+                    .frame(height: 100)
+                    .padding(12)
+            }
             
             Divider()
             
             // Menu Actions
             VStack(spacing: 0) {
                 Button {
-                    showingPreferences = true
+                    openWindow(id: "preferences")
                 } label: {
                     HStack {
                         Image(systemName: "gearshape")
@@ -125,20 +109,6 @@ struct MenuBarView: View {
                         Spacer()
                         Text("⌘,")
                             .foregroundStyle(.secondary)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                
-                Button {
-                    showingOnboarding = true
-                } label: {
-                    HStack {
-                        Image(systemName: "questionmark.circle")
-                        Text("Show Getting Started")
-                        Spacer()
                     }
                     .contentShape(Rectangle())
                 }
@@ -167,12 +137,6 @@ struct MenuBarView: View {
             .padding(.vertical, 4)
         }
         .frame(width: 300)
-        .background(Color(NSColor.windowBackgroundColor))
-        .sheet(isPresented: $showingPreferences) {
-            PreferencesWindow(settings: settings, scanner: scanner)
-        }
-        .sheet(isPresented: $showingOnboarding) {
-            OnboardingWindow(settings: settings, scanner: scanner)
-        }
+        //.background(Color(NSColor.windowBackgroundColor))
     }
 }
