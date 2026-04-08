@@ -12,15 +12,13 @@ struct InitialSetupView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: CardMetrics.spacing) {
-            // Header with icon
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.blue)
-                Text("Initial Setup")
+                Text("Getting Started")
                     .font(.subheadline.weight(.semibold))
             }
             
-            // Welcome section
             VStack(alignment: .leading, spacing: 8) {
                 Text("Welcome to ProximityLock!")
                     .font(.caption.weight(.medium))
@@ -46,7 +44,6 @@ struct InitialSetupView: View {
             Divider()
                 .padding(.vertical, 4)
             
-            // Security notice section
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 4) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -61,19 +58,11 @@ struct InitialSetupView: View {
                     .foregroundStyle(.secondary)
             }
             
-            // Single confirmation button
-            Button {
+            Button("Got it!") {
                 settings.isFirstTimeLocking = false
-            } label: {
-                HStack {
-                    Spacer()
-                    Text("Got it! Let's get started")
-                    Spacer()
-                }
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
             .tint(.blue)
+            .controlSize(.small)
         }
         .padding(CardMetrics.cardPadding)
         .background(
