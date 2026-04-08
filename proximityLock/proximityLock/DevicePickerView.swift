@@ -8,9 +8,6 @@
 import SwiftUI
 
 struct DevicePickerView: View {
-    @State private var devices: [DeviceItem] = []
-    @State private var selectedID: String? = nil
-    
     @ObservedObject var scanner: ScannerService
     
     var sortedDevices: [DeviceItem] {
@@ -19,60 +16,108 @@ struct DevicePickerView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: CardMetrics.spacing) {
-                HStack {
-                    Text("Devices")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                    
-                }
+        VStack(alignment: .leading, spacing: 12) {
             
+            //Shows if there is a selected device
             if let selected = scanner.selectedDevice {
-                Text("Selected: \(selected.name)")
-                    .font(.footnote)
-                    .foregroundStyle(.primary)
-            }
-            
-            Text("Choose Device")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            ScrollView {
-                LazyVStack(spacing: 4) {
-                    ForEach(sortedDevices) { device in
-                        Button {
-                            selectedID = device.id
-                            scanner.selectedDevice = device
-                        } label: {
-                            HStack {
-                                Text(device.name)
-                                    .font(.subheadline)
-                                Spacer()
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .buttonStyle(.plain)
-                    }.padding(.vertical, 2)
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Currently Selected")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(selected.name)
+                            .font(.subheadline.weight(.medium))
+                    }
+                    Spacer()
                 }
-                .padding(.vertical, 2)
+                .padding(12)
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(8)
             }
-            .frame(height: 60)
             
-            Button(action: {
-                scanner.updateDevices()
-            }) {
-                Label("Scan for devices", systemImage: "arrow.clockwise")
+            //Device list
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Available Devices")
+                        .font(.caption.weight(.medium))
+                    Spacer()
+                    Button {
+                        scanner.updateDevices()
+                    } label: {
+                        Label("Refresh", systemImage: "arrow.clockwise")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.blue)
+                }
+                
+                if sortedDevices.isEmpty {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(.secondary)
+                        Text("No devices found. Click Refresh to scan.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 100)
+                    .background(Color(NSColor.textBackgroundColor))
+                    .cornerRadius(6)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 4) {
+                            ForEach(sortedDevices) { device in
+                                Button {
+                                    scanner.selectedDevice = device
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: deviceIcon(for: device.name))
+                                            .foregroundStyle(.blue)
+                                            .frame(width: 20)
+                                        
+                                        Text(device.name)
+                                            .font(.subheadline)
+                                        
+                                        Spacer()
+                                        
+                                        if scanner.selectedDevice?.id == device.id {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundStyle(.green)
+                                        }
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        scanner.selectedDevice?.id == device.id ?
+                                        Color.blue.opacity(0.1) : Color.clear
+                                    )
+                                    .cornerRadius(6)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(4)
+                    }
+                    .frame(height: 150)
+                    .background(Color(NSColor.textBackgroundColor))
+                    .cornerRadius(6)
+                }
             }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
         }
         .padding(CardMetrics.cardPadding)
-        .overlay(
-            RoundedRectangle(cornerRadius: CardMetrics.cardCornerRadius)
-                .stroke(.quaternary, lineWidth: CardMetrics.cardBorderWidth)
-        )
+        .background(Color(NSColor.textBackgroundColor))
+        .cornerRadius(8)
     }
     
+    private func deviceIcon(for name: String) -> String {
+        let lowercased = name.lowercased()
+        if lowercased.contains("iphone") { return "iphone" }
+        if lowercased.contains("ipad") { return "ipad" }
+        if lowercased.contains("watch") { return "applewatch" }
+        if lowercased.contains("airpods") { return "airpodspro" }
+        if lowercased.contains("mac") { return "laptopcomputer" }
+        return "antenna.radiowaves.left.and.right"
+    }
 }
 
