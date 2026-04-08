@@ -25,7 +25,7 @@ struct MenuBarView: View {
                         .imageScale(.large)
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Proximity Lock")
+                        Text("ProximityLock")
                             .font(.headline)
                         Text(scanner.proximityLockEnabled ? "Monitoring" : "Disabled")
                             .font(.caption)
@@ -89,7 +89,6 @@ struct MenuBarView: View {
             
             Divider()
             
-            // RSSI Chart
             VStack(spacing: 0) {
                 RSSIChartView(scanner: scanner)
                     .frame(height: 100)
@@ -98,14 +97,12 @@ struct MenuBarView: View {
             
             Divider()
             
-            // Menu Actions
             VStack(spacing: 0) {
                 Button {
-                    openWindow(id: "preferences")
+                    openWindow(id: "settings")
                 } label: {
                     HStack {
-                        Image(systemName: "gearshape")
-                        Text("Preferences...")
+                        Text("ProximityLock settings...")
                         Spacer()
                         Text("⌘,")
                             .foregroundStyle(.secondary)
